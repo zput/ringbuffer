@@ -9,10 +9,10 @@
 
 #### 中文 | [English](README.md)
 
-环形缓存：
-    - 在New构造函数的时候，通过参数决定是加锁（线程安全）还是不加锁。
-    - 当环形缓存空间满后，可以自动扩展内存。
-    - 当使用探索类函数(ExploreBegin()----ExploreRead()/ExploreSize()----ExploreCommit()/ExploreBreak())，可以预先探索缓存中的数据，最后可以决定是提交还是放弃。
+- 多功能环形缓存：
+  - 在New构造函数的时候，通过参数决定是加锁（线程安全）还是不加锁。
+  - 当环形缓存空间满后，可以自动扩展内存。
+  - 当使用探索类函数(ExploreBegin()----ExploreRead()/ExploreSize()----ExploreCommit()/ExploreBreak())，可以预先探索缓存中的数据，最后可以决定是提交还是放弃。
          
 ## 特点
 
@@ -26,17 +26,29 @@
 <details>
   <summary> 📈 测试数据 </summary>
 
-> 测试环境 Mac 
+> 测试电脑 Mac 
 
-### 吞吐量测试
+### 读写测试
 
 无锁
 
-![image](benchmarks/out/unlock.jpg)
+```golang
+goos: darwin
+goarch: amd64
+pkg: github.com/zput/ringbuffer
+BenchmarkRingBuffer_Sync_Unlock-4   	29223921	        43.5 ns/op
+PASS
+```
 
 有锁
 
-![image](benchmarks/out/lock.jpg)
+```golang
+goos: darwin
+goarch: amd64
+pkg: github.com/zput/ringbuffer
+BenchmarkRingBuffer_Sync_Lock-4   	12641550	        89.1 ns/op
+PASS
+```
 
 </details>
 
