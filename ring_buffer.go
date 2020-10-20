@@ -85,7 +85,12 @@ func New(cap int, isOpenLock ...bool) *RingBuffer {
 	}
 }
 
-// NewWithData 特殊场景使用，RingBuffer 会持有data，不会自己申请内存去拷贝
+// NewWithData;let ringBuffer is full,
+/*
+	 _ _ _ _ _
+	|0|1|2|3|4|
+	rIdx == 0; wIdx == 0; isEmpty == false; this ringBuffer is full
+*/
 func NewWithData(data []byte, isOpenLock ...bool) *RingBuffer {
 	var isOpen bool
 	if len(isOpenLock) > 0 {
@@ -94,7 +99,7 @@ func NewWithData(data []byte, isOpenLock ...bool) *RingBuffer {
 	return &RingBuffer{
 		buf: data,
 		cap: len(data),
-		isEmpty:   true,
+		isEmpty:   false,
 		m:   innerLock{IsOpen: isOpen},
 	}
 }
