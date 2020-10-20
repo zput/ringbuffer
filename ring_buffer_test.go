@@ -659,3 +659,52 @@ func TestCopyBytes(t *testing.T) {
 		t.Fatal(string(out))
 	}
 }
+
+func TestAppendSpace(t *testing.T) {
+
+	var data = make([]byte, 5, 7)
+	for i:= 0; i<5; i++{
+		data[i] = byte(i)
+	}
+	r1, err := NewWithDataAndPointer(data, 0, 4, false)
+	if err != nil{
+		t.Fatal(err)
+	}
+	err = r1.WriteOneByte(byte(8))
+	if err != nil{
+		t.Fatal(err)
+	}
+
+	//t.Log(r1.ReadAll2NewByteSlice(), r1.wIdx, r1.rIdx)
+
+	if r1.IsFull() == false{
+		t.Fatal("should full")
+	}
+
+	if r1.Capacity() != 5{
+		t.Fatal("capacity should equal 5")
+	}
+
+	n, err := r1.Write([]byte{byte(11),byte(12)})
+	if err != nil{
+		t.Fatal(err)
+	}
+	if n != 2{
+		t.Fatal("number when write to buffer, should equal 2")
+	}
+
+	//01238-56
+	//01012-38
+	//11-12-0-1-2-3-8
+	if r1.IsFull() != true{
+		t.Fatal("should full", data, r1.buf)
+	}
+
+	if r1.Capacity() != 7{
+		t.Fatal("capacity should equal 7")
+	}
+
+	if !bytes.Equal(r1.buf, []byte{byte(11), byte(12), byte(0), byte(1), byte(2), byte(3), byte(8)}) {
+		t.Fatal(r1.buf)
+	}
+}

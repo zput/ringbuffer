@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 	"unsafe"
 )
@@ -38,6 +39,8 @@ func (this *innerLock) Unlock() {
 var ErrIsEmpty = errors.New("ring buffer is empty")
 
 var ErrIsNotInExplore = errors.New("not begin explore read; ring buffer")
+
+var ErrInitRingBufferParameter = errors.New("parameter is not right; when initializing ring buffer")
 
 /*
 	 _ _ _ _ _
@@ -78,7 +81,6 @@ func New(cap int, isOpenLock ...bool) *RingBuffer {
 		buf:       make([]byte, cap),
 		cap:       cap,
 		isEmpty:   true,
-		episEmpty: true,
 		m:         innerLock{IsOpen: isOpen},
 	}
 }
@@ -92,8 +94,39 @@ func NewWithData(data []byte, isOpenLock ...bool) *RingBuffer {
 	return &RingBuffer{
 		buf: data,
 		cap: len(data),
+		isEmpty:   true,
 		m:   innerLock{IsOpen: isOpen},
 	}
+}
+
+func NewWithDataAndPointer(data []byte, beginPointer, endPointer int, isEmpty bool, isOpenLock ...bool)(*RingBuffer, error) {
+
+	if beginPointer < endPointer && isEmpty != false{
+		if len(data)<endPointer{
+			return nil, ErrInitRingBufferParameter
+		}
+		//isEmpty = false
+	}else if beginPointer > endPointer && isEmpty != false{
+		if len(data)<beginPointer{
+			return nil, ErrInitRingBufferParameter
+		}
+		//isEmpty = false
+	}else{
+		// beginPointer is equality endPointer
+	}
+
+	var isOpen bool
+	if len(isOpenLock) > 0 {
+		isOpen = isOpenLock[0]
+	}
+	return &RingBuffer{
+		buf: data,
+		cap: len(data),
+		rIdx:beginPointer,
+		wIdx:endPointer,
+		isEmpty:isEmpty,
+		m:   innerLock{IsOpen: isOpen},
+	}, nil
 }
 
 // 注意，这个array[wIdx]是没有保存数据的，所以计算剩余空间和已占有空间的时候要注意。
@@ -116,15 +149,26 @@ func (this *RingBuffer) free() int {
 
 // called by inside;  non lock
 func (this *RingBuffer) appendSpace(len int) {
-	newSize := this.cap + len
-	newBuf := make([]byte, newSize)
-	oldLen := this.size()
-	_, _ = this.read(newBuf)
+	if cap(this.buf) >= this.cap+len{
+		reflect.ValueOf(&this.buf).Elem().SetLen(this.cap+len)
+		if this.wIdx <= this.rIdx{
+			for i:= this.cap-1; i>=this.rIdx; i--{
+				this.buf[i+len] = this.buf[i]
+			}
+			this.rIdx += len
+		}
+		this.cap += len
+	}else{
+		newSize := this.cap + len
+		newBuf := make([]byte, newSize)
+		oldLen := this.size()
+		_, _ = this.read(newBuf)
 
-	this.wIdx = oldLen
-	this.rIdx = 0
-	this.cap = newSize
-	this.buf = newBuf
+		this.wIdx = oldLen
+		this.rIdx = 0
+		this.cap = newSize
+		this.buf = newBuf
+	}
 }
 
 // called by inside;  non lock
