@@ -42,8 +42,8 @@ func TestRingBuffer_Write(t *testing.T) {
 	if n != 8 {
 		t.Fatalf("expect write 4 bytes but got %d", n)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte(strings.Repeat("abcd", 2))) {
-		t.Fatalf("expect 8 abcdabcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte(strings.Repeat("abcd", 2))) {
+		t.Fatalf("expect 8 abcdabcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 	rb.Retrieve(5)
 	if rb.Size() != 3 {
@@ -52,8 +52,8 @@ func TestRingBuffer_Write(t *testing.T) {
 	if rb.free() != 61 {
 		t.Fatalf("expect free 61 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte(strings.Repeat("bcd", 1))) {
-		t.Fatalf("expect 1 bcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte(strings.Repeat("bcd", 1))) {
+		t.Fatalf("expect 1 bcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 	_, err = rb.Write([]byte(strings.Repeat("abcd", 15)))
 	if err != nil {
@@ -68,8 +68,8 @@ func TestRingBuffer_Write(t *testing.T) {
 	if rb.free() != 1 {
 		t.Fatalf("expect free 1 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte("bcd"+strings.Repeat("abcd", 15))) {
-		t.Fatalf("expect 63 ... but got %s. buf %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.buf, rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte("bcd"+strings.Repeat("abcd", 15))) {
+		t.Fatalf("expect 63 ... but got %s. buf %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.buf, rb.wIdx, rb.rIdx)
 	}
 	rb.RetrieveAll()
 
@@ -87,8 +87,8 @@ func TestRingBuffer_Write(t *testing.T) {
 	if rb.free() != 48 {
 		t.Fatalf("expect free 48 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte(strings.Repeat("abcd", 4))) {
-		t.Fatalf("expect 4 abcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte(strings.Repeat("abcd", 4))) {
+		t.Fatalf("expect 4 abcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 
 	// check empty or full
@@ -116,8 +116,8 @@ func TestRingBuffer_Write(t *testing.T) {
 	if rb.wIdx != 0 {
 		t.Fatalf("expect rIdx.wIdx=0 but got %d. rIdx.rIdx=%d", rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte(strings.Repeat("abcd", 16))) {
-		t.Fatalf("expect 16 abcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte(strings.Repeat("abcd", 16))) {
+		t.Fatalf("expect 16 abcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 
 	// check empty or full
@@ -169,8 +169,8 @@ func TestRingBuffer_Write(t *testing.T) {
 		t.Fatalf("expect IsFull is true but got false")
 	}
 
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte(strings.Repeat("abcd", 20))) {
-		t.Fatalf("expect 20 abcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte(strings.Repeat("abcd", 20))) {
+		t.Fatalf("expect 20 abcd but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 }
 
@@ -302,8 +302,8 @@ func TestRingBuffer_Peek(t *testing.T) {
 		t.Fatalf("expect 12 but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", end, rb.wIdx, rb.rIdx)
 	}
 
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte("abcdabcd1234")) {
-		t.Fatalf("expect abcdabcd1234 but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte("abcdabcd1234")) {
+		t.Fatalf("expect abcdabcd1234 but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 
 	first, end = rb.PeekAll()
@@ -321,8 +321,8 @@ func TestRingBuffer_Peek(t *testing.T) {
 	}
 
 	rb.Retrieve(10)
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte("34")) {
-		t.Fatalf("expect 34 but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte("34")) {
+		t.Fatalf("expect 34 but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 }
 
@@ -340,8 +340,8 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.free() != 1 {
 		t.Fatalf("expect free 1 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte{'a'}) {
-		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte{'a'}) {
+		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 	// check empty or full
 	if rb.IsEmpty() {
@@ -362,8 +362,8 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.free() != 0 {
 		t.Fatalf("expect free 0 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte{'a', 'b'}) {
-		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte{'a', 'b'}) {
+		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 	// check empty or full
 	if rb.IsEmpty() {
@@ -384,8 +384,8 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.free() != 0 {
 		t.Fatalf("expect free 0 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte{'a', 'b', 'c'}) {
-		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte{'a', 'b', 'c'}) {
+		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 	// check empty or full
 	if rb.IsEmpty() {
@@ -409,8 +409,8 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.free() != 1 {
 		t.Fatalf("expect free 1 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if !bytes.Equal(rb.CopyAll2NewByteSlice(), []byte{'b', 'c'}) {
-		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.CopyAll2NewByteSlice(), rb.wIdx, rb.rIdx)
+	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte{'b', 'c'}) {
+		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 	// check empty or full
 	if rb.IsEmpty() {
@@ -491,7 +491,7 @@ func TestNewWithData(t *testing.T) {
 		t.Fatal()
 	}
 
-	if !bytes.Equal(rBuf.CopyAll2NewByteSlice(), buf) {
+	if !bytes.Equal(rBuf.ReadAll2NewByteSlice(), buf) {
 		t.Fatal()
 	}
 	first, _ := rBuf.PeekAll()

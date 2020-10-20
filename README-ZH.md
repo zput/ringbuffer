@@ -64,7 +64,24 @@ go get -u github.com/zput/ringbuffer
   <summary> 创建有锁/无锁ringbuffer对象</summary>
 
 ```go
+package main
 
+import (
+	"fmt"
+	"github.com/zput/ringbuffer"
+)
+
+const bufferCapacity = 1024
+
+func main() {
+
+	var whetherThreadSafe bool
+
+	buffer := ringbuffer.New(bufferCapacity, whetherThreadSafe)
+
+	fmt.Println(buffer.WriteString("writing ..."))
+	fmt.Println(buffer.Size(), buffer.Capacity())
+}
 ```
 
 </details>
@@ -82,6 +99,7 @@ go get -u github.com/zput/ringbuffer
   <summary> 探索Explore类函数 </summary>
 
 ```go
+
 ```
 
 </details>

@@ -451,12 +451,12 @@ func (this *RingBuffer) PeekUint64() uint64 {
 }
 
 /*
-   - CopyAll2NewByteSlice:
+   - ReadAll2NewByteSlice:
      - 创建一个新的字节切片，然后把缓存中的所有数据拷贝到新的字节切片去;
      - 不影响原有的缓存任何东西。
 */
 // READ LOCK
-func (this *RingBuffer) CopyAll2NewByteSlice() (buf []byte) {
+func (this *RingBuffer) ReadAll2NewByteSlice() (buf []byte) {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
@@ -535,7 +535,7 @@ func (this *RingBuffer) Retrieve(len int) {
 }
 
 func (this *RingBuffer) PrintRingBufferInfo() string {
-	return fmt.Sprintf("\n\tRing Buffer: \n\t\tCap: %d\n\t\tsize(can read): %d\n\t\tFreeSpace: %d\n\t\tContent: %s\n", this.cap, this.size(), this.free(), this.CopyAll2NewByteSlice())
+	return fmt.Sprintf("\n\tRing Buffer: \n\t\tCap: %d\n\t\tsize(can read): %d\n\t\tFreeSpace: %d\n\t\tContent: %s\n", this.cap, this.size(), this.free(), this.ReadAll2NewByteSlice())
 }
 
 // call ReadOneByte
