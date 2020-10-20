@@ -36,3 +36,16 @@ func main() {
 
 	fmt.Println(buffer.PeekUint64())
 }
+
+/*
+11 <nil>
+size[11]; capacity[1024]
+writing
+writing ...
+119
+30578
+2003986804
+8607057786564405024
+
+Process finished with exit code 0
+*/
