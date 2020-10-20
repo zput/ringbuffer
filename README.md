@@ -24,7 +24,7 @@
 ## Example
 
 <details>
-  <summary> 创建有锁/无锁ringbuffer对象</summary>
+  <summary> Create locked/unlocked ringbuffer objects</summary>
 
 ```go
 package main
@@ -91,7 +91,7 @@ Process finished with exit code 0
 </details>
 
 <details>
-  <summary> 预先偷看缓存中还未读取的数据 </summary>
+  <summary> Peeking into the unread data in this Ringbuffer </summary>
 
 ```go
 package main
@@ -150,7 +150,7 @@ Process finished with exit code 0
 </details>
 
 <details>
-  <summary> 探索Explore类函数 </summary>
+  <summary> Explore Class Functions </summary>
 
 ```go
 package main
