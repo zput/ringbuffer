@@ -21,6 +21,38 @@
 - Provide explore class functions that simulate reading first, but don't move the actual
 
 
+## Performance Testing
+
+<details>
+  <summary> 📈 测试数据 </summary>
+
+> os platform: Mac 
+
+### test for write and read
+
+have locked
+
+```golang
+goos: darwin
+goarch: amd64
+pkg: github.com/zput/ringbuffer
+BenchmarkRingBuffer_Sync_Unlock-4   	29223921	        43.5 ns/op
+PASS
+```
+
+unlocked
+
+```golang
+goos: darwin
+goarch: amd64
+pkg: github.com/zput/ringbuffer
+BenchmarkRingBuffer_Sync_Lock-4   	12641550	        89.1 ns/op
+PASS
+```
+
+</details>
+
+
 ## Example
 
 <details>
