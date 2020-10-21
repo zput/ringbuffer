@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+const GrowthFactor float32 = 1.5
+
 type innerLock struct {
 	sync.RWMutex
 	IsOpen bool
@@ -165,6 +167,8 @@ func (this *RingBuffer) appendSpace(len int) {
 		this.cap += len
 	}else{
 		newSize := this.cap + len
+		//添加增长因子
+		newSize = int(float32(newSize) * GrowthFactor)
 		newBuf := make([]byte, newSize)
 		oldLen := this.size()
 		_, _ = this.read(newBuf)
