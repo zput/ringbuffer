@@ -158,17 +158,27 @@ func (this *RingBuffer) free() int {
 func (this *RingBuffer) appendSpace(len int) {
 	if cap(this.buf) >= this.cap+len{
 		reflect.ValueOf(&this.buf).Elem().SetLen(this.cap+len)
+
 		if this.wIdx <= this.rIdx{
-			for i:= this.cap-1; i>=this.rIdx; i--{
-				this.buf[i+len] = this.buf[i]
+			if this.wIdx > (this.cap - this.rIdx) {
+				// move from rIdx ->rightIndex
+				for i := this.cap - 1; i >= this.rIdx; i-- {
+					this.buf[i+len] = this.buf[i]
+				}
+				this.rIdx += len
+			}else{
+				// move from 0 -> wIdx
+				for i:= 0; i<this.wIdx; i++{
+					this.buf[this.cap+i] = this.buf[i]
+				}
+				this.wIdx = this.cap + this.wIdx
 			}
-			this.rIdx += len
 		}
 		this.cap += len
 	}else{
-		newSize := this.cap + len
+		newSize := NotMoreThan(this.cap + len)
 		//添加增长因子
-		newSize = int(float32(newSize) * GrowthFactor)
+		//newSize = int(float32(newSize) * GrowthFactor)
 		newBuf := make([]byte, newSize)
 		oldLen := this.size()
 		_, _ = this.read(newBuf)
@@ -688,4 +698,45 @@ func (this *RingBuffer) ExploreSize() int {
 	}
 
 	return this.cap - this.eprIdx + this.wIdx
+}
+
+const Is64bitArch = ^uint(0) >> 63 == 1
+const Is32bitArch = ^uint(0) >> 63 == 0
+const WordBits = 32 << (^uint(0) >> 63) // 64或32
+const intWordHeadBit = 1 << (WordBits - 2) // 64, 32
+
+// CeilToPowerOfTwo returns the least power of two integer value greater than
+// or equal to n.
+func NotMoreThan(n int) int {
+	if n&intWordHeadBit != 0 && n > intWordHeadBit {
+		panic("argument is too large")
+	}
+	if n <= 2 {
+		return 2
+	}
+	n--
+	n = roundingBinaryMath(n)
+	n++
+	return n
+}
+
+/*
+0 --- 0
+1 --- 1
+2 --- 3
+3 --- 3
+4 --- 7
+5 --- 7
+6 --- 7
+7 --- 7
+8 --- 15
+*/
+func roundingBinaryMath(n int)int{
+	n |= n >> 1
+	n |= n >> 2
+	n |= n >> 4
+	n |= n >> 8
+	n |= n >> 16
+	n |= n >> 32
+	return n
 }

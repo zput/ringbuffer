@@ -128,25 +128,30 @@ func TestRingBuffer_Write(t *testing.T) {
 		t.Fatalf("expect IsFull is true but got false")
 	}
 
+	 t.Log(rb.Size(), rb.free())
+
 	// write more 4 bytes, should reject
+	originCap := rb.cap
 	_, _ = rb.Write([]byte(strings.Repeat("abcd", 1)))
 	if rb.Size() != 68 {
 		t.Fatalf("expect len 68 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 0 {
-		t.Fatalf("expect free 0 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
+	if rb.free() != NotMoreThan(originCap+4)-68 {
+		t.Fatalf("expect free %d bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", NotMoreThan(originCap+4)-68, rb.free(), rb.wIdx, rb.rIdx)
 	}
 
 	// check empty or full
 	if rb.IsEmpty() {
 		t.Fatalf("expect IsEmpty is false but got true")
 	}
-	if !rb.IsFull() {
+	if rb.IsFull() {
 		t.Fatalf("expect IsFull is true but got false")
 	}
 
 	// reset this ringbuffer and set a long slice
 	rb.Reset()
+	originCap = NotMoreThan(originCap+4)
+	t.Log(rb.Size(), rb.free())
 	n, _ = rb.Write([]byte(strings.Repeat("abcd", 20)))
 	if n != 80 {
 		t.Fatalf("expect write 80 bytes but got %d", n)
@@ -154,10 +159,10 @@ func TestRingBuffer_Write(t *testing.T) {
 	if rb.Size() != 80 {
 		t.Fatalf("expect len 80 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 0 {
-		t.Fatalf("expect free 0 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
+	if rb.free() !=  originCap-80{
+		t.Fatalf("expect free %d bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", originCap-80, rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if rb.wIdx != 0 {
+	if rb.wIdx != 80 {
 		t.Fatalf("expect rIdx.wIdx=0 but got %d. rIdx.rIdx=%d", rb.wIdx, rb.rIdx)
 	}
 
@@ -165,7 +170,7 @@ func TestRingBuffer_Write(t *testing.T) {
 	if rb.IsEmpty() {
 		t.Fatalf("expect IsEmpty is false but got true")
 	}
-	if !rb.IsFull() {
+	if rb.IsFull() {
 		t.Fatalf("expect IsFull is true but got false")
 	}
 
@@ -238,17 +243,20 @@ func TestRingBuffer_Read(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read failed: %v", err)
 	}
+	if rb.Capacity() != NotMoreThan(64+80-64){
+		t.Fatalf("expect capacity %d bytes but got %d", NotMoreThan(64+80-64), rb.Capacity())
+	}
 	if n != 80 {
 		t.Fatalf("expect read 80 bytes but got %d", n)
 	}
 	if rb.Size() != 0 {
 		t.Fatalf("expect len 0 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 80 {
-		t.Fatalf("expect free 80 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
+	if rb.free() != NotMoreThan(64+80-64) {
+		t.Fatalf("expect free %d bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", NotMoreThan(64+80-64), rb.free(), rb.wIdx, rb.rIdx)
 	}
-	if rb.rIdx != 0 {
-		t.Fatalf("expect rIdx.rIdx=16 but got %d. rIdx.wIdx=%d", rb.rIdx, rb.wIdx)
+	if rb.rIdx != rb.wIdx {
+		t.Fatalf("expect rIdx==wIdx but got rIdx=%d. wIdx=%d", rb.rIdx, rb.wIdx)
 	}
 
 }
@@ -378,11 +386,11 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.Size() != 3 {
 		t.Fatalf("expect len 3 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.Capacity() != 3 {
-		t.Fatalf("expect Capacity 3 bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Capacity(), rb.wIdx, rb.rIdx)
+	if rb.Capacity() != NotMoreThan(2+1) {
+		t.Fatalf("expect Capacity %d bytes but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", NotMoreThan(2+1), rb.Capacity(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 0 {
-		t.Fatalf("expect free 0 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
+	if rb.free() != NotMoreThan(2+1)-3 {
+		t.Fatalf("expect free %d byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", NotMoreThan(2+1)-3, rb.free(), rb.wIdx, rb.rIdx)
 	}
 	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte{'a', 'b', 'c'}) {
 		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
@@ -390,9 +398,6 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	// check empty or full
 	if rb.IsEmpty() {
 		t.Fatalf("expect IsEmpty is false but got true")
-	}
-	if !rb.IsFull() {
-		t.Fatalf("expect IsFull is true but got false")
 	}
 
 	// read one
@@ -406,9 +411,7 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.Size() != 2 {
 		t.Fatalf("expect len 2 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 1 {
-		t.Fatalf("expect free 1 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
-	}
+
 	if !bytes.Equal(rb.ReadAll2NewByteSlice(), []byte{'b', 'c'}) {
 		t.Fatalf("expect a but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
@@ -431,18 +434,13 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	if rb.Size() != 1 {
 		t.Fatalf("expect len 1 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 2 {
-		t.Fatalf("expect free 2 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
-	}
 
 	// read three, error
 	_, _ = rb.ReadOneByte()
 	if rb.Size() != 0 {
 		t.Fatalf("expect len 0 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
 	}
-	if rb.free() != 3 {
-		t.Fatalf("expect free 3 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
-	}
+
 	// check empty or full
 	if !rb.IsEmpty() {
 		t.Fatalf("expect IsEmpty is true but got false")
@@ -458,9 +456,6 @@ func TestRingBuffer_ByteInterface(t *testing.T) {
 	}
 	if rb.Size() != 0 {
 		t.Fatalf("expect len 0 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.Size(), rb.wIdx, rb.rIdx)
-	}
-	if rb.free() != 3 {
-		t.Fatalf("expect free 3 byte but got %d. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.free(), rb.wIdx, rb.rIdx)
 	}
 	// check empty or full
 	if !rb.IsEmpty() {
@@ -704,7 +699,7 @@ func TestAppendSpace(t *testing.T) {
 		t.Fatal("capacity should equal 7")
 	}
 
-	if !bytes.Equal(r1.buf, []byte{byte(11), byte(12), byte(0), byte(1), byte(2), byte(3), byte(8)}) {
+	if !bytes.Equal(r1.buf, []byte{byte(0), byte(1), byte(2), byte(3), byte(8), byte(11), byte(12)}) {
 		t.Fatal(r1.buf)
 	}
 }
