@@ -566,16 +566,21 @@ func (this *RingBuffer) Reset() {
 }
 
 // READ/WRITE LOCK
-func (this *RingBuffer) RetrieveAll() {
-	this.m.Lock()
-	defer this.m.Unlock()
-
+func (this *RingBuffer) retrieveAll() {
 	this.rIdx = 0
 	this.wIdx = 0
 	this.isEmpty = true
 	this.eprIdx = 0
 	this.episEmpty = true
 	this.inExplore = false
+}
+
+// READ/WRITE LOCK
+func (this *RingBuffer) RetrieveAll() {
+	this.m.Lock()
+	defer this.m.Unlock()
+
+	this.retrieveAll()
 }
 
 func (this *RingBuffer) Retrieve(len int) {
@@ -590,11 +595,10 @@ func (this *RingBuffer) Retrieve(len int) {
 		if this.wIdx == this.rIdx {
 			this.isEmpty = true
 		}
-		this.m.Unlock()
 	} else {
-		this.m.Unlock()
-		this.RetrieveAll()
+		this.retrieveAll()
 	}
+	this.m.Unlock()
 }
 
 func (this *RingBuffer) PrintRingBufferInfo() string {
