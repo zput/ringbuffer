@@ -545,19 +545,19 @@ func (this *RingBuffer) ReadAll2NewByteSlice() (buf []byte) {
 }
 
 // READ LOCK
-func (this *RingBuffer) IsFull() bool {
+func (this *RingBuffer) IsFull() (isFull bool) {
 	this.m.RLock()
-	defer this.m.RUnlock()
-
-	return !this.isEmpty && this.wIdx == this.rIdx
+	isFull = !this.isEmpty && this.wIdx == this.rIdx
+	this.m.RUnlock()
+	return
 }
 
 // READ LOCK
-func (this *RingBuffer) IsEmpty() bool {
+func (this *RingBuffer) IsEmpty()(isEmpty bool){
 	this.m.RLock()
-	defer this.m.RUnlock()
-
-	return this.isEmpty
+	isEmpty = this.isEmpty
+	this.m.RUnlock()
+	return
 }
 
 // call RetrieveAll
