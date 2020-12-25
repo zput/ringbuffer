@@ -262,6 +262,9 @@ func TestRingBuffer_Read(t *testing.T) {
 }
 
 func TestRingBuffer_Peek(t *testing.T) {
+
+	var isUsingExplore = false
+
 	rb := New(16)
 
 	buf := make([]byte, 8)
@@ -284,7 +287,7 @@ func TestRingBuffer_Peek(t *testing.T) {
 		t.Fatalf("expect rIdx.rIdx=8 but got %d. rIdx.wIdx=%d", rb.rIdx, rb.wIdx)
 	}
 
-	first, end := rb.Peek(4)
+	first, end := rb.Peek(4, isUsingExplore)
 	if len(first) != 4 {
 		t.Fatalf("expect len 4 bytes but got %d", len(first))
 	}
@@ -296,7 +299,7 @@ func TestRingBuffer_Peek(t *testing.T) {
 	}
 
 	_, _ = rb.Write([]byte("1234"))
-	first, end = rb.Peek(10)
+	first, end = rb.Peek(10, isUsingExplore)
 	if len(first) != 8 {
 		t.Fatalf("expect len 8 bytes but got %d", len(first))
 	}
@@ -314,7 +317,7 @@ func TestRingBuffer_Peek(t *testing.T) {
 		t.Fatalf("expect abcdabcd1234 but got %s. rIdx.wIdx=%d, rIdx.rIdx=%d", rb.ReadAll2NewByteSlice(), rb.wIdx, rb.rIdx)
 	}
 
-	first, end = rb.PeekAll()
+	first, end = rb.PeekAll(isUsingExplore)
 	if len(first) != 8 {
 		t.Fatalf("expect len 8 bytes but got %d", len(first))
 	}
@@ -489,7 +492,7 @@ func TestNewWithData(t *testing.T) {
 	if !bytes.Equal(rBuf.ReadAll2NewByteSlice(), buf) {
 		t.Fatal()
 	}
-	first, _ := rBuf.PeekAll()
+	first, _ := rBuf.PeekAll(false)
 	if !bytes.Equal(first, buf) {
 		t.Fatal()
 	}
@@ -601,6 +604,9 @@ func TestRingBuffer_ExploreXXX(t *testing.T) {
 }
 
 func TestRingBuffer_PeekUintXX(t *testing.T) {
+
+	var isUsingExplore = false
+
 	rb := New(1024)
 	_ = rb.WriteOneByte(0x01)
 
@@ -620,25 +626,25 @@ func TestRingBuffer_PeekUintXX(t *testing.T) {
 		t.Fatal()
 	}
 
-	v := rb.PeekUint8()
+	v := rb.PeekUint8(isUsingExplore)
 	if v != 0x01 {
 		t.Fatal()
 	}
 	rb.Retrieve(1)
 
-	v1 := rb.PeekUint16()
+	v1 := rb.PeekUint16(isUsingExplore)
 	if v1 != 100 {
 		t.Fatal()
 	}
 	rb.Retrieve(2)
 
-	v2 := rb.PeekUint32()
+	v2 := rb.PeekUint32(isUsingExplore)
 	if v2 != 200 {
 		t.Fatal()
 	}
 	rb.Retrieve(4)
 
-	v3 := rb.PeekUint64()
+	v3 := rb.PeekUint64(isUsingExplore)
 	if v3 != 300 {
 		t.Fatal(v3)
 	}

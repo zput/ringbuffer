@@ -3,66 +3,96 @@ package ringbuffer
 import "encoding/binary"
 
 // READ LOCK
-func (this *RingBuffer) Peek(len int) (first []byte, end []byte) {
+func (this *RingBuffer) Peek(len int, isUsingExplore bool) (first []byte, end []byte) {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
-	if this.isEmpty || len <= 0 {
-		return
+	var (
+		readPosition int
+	)
+
+	if isUsingExplore == true {
+		if this.episEmpty || len <= 0 {
+			return
+		}
+		readPosition = this.eprIdx
+	}else{
+		if this.isEmpty || len <= 0 {
+			return
+		}
+		readPosition = this.rIdx
 	}
 
-	if this.wIdx > this.rIdx {
-		if len > this.wIdx-this.rIdx {
-			len = this.wIdx - this.rIdx
+	if this.wIdx > readPosition {
+		if len > this.wIdx-readPosition {
+			len = this.wIdx - readPosition
 		}
 
-		first = this.buf[this.rIdx : this.rIdx+len]
+		first = this.buf[readPosition : readPosition+len]
 		return
 	}
 
-	if len > this.cap-this.rIdx+this.wIdx {
-		len = this.cap - this.rIdx + this.wIdx
+	if len > this.cap-readPosition+this.wIdx {
+		len = this.cap - readPosition + this.wIdx
 	}
-	if this.rIdx+len <= this.cap {
-		first = this.buf[this.rIdx : this.rIdx+len]
+	if readPosition+len <= this.cap {
+		first = this.buf[readPosition : readPosition+len]
 	} else {
 		// head
-		first = this.buf[this.rIdx:this.cap]
+		first = this.buf[readPosition:this.cap]
 		// tail
-		end = this.buf[0 : len-this.cap+this.rIdx]
+		end = this.buf[0 : len-this.cap+readPosition]
 	}
 	return
 }
 
 // READ LOCK
-func (this *RingBuffer) PeekAll() (first []byte, end []byte) {
+func (this *RingBuffer) PeekAll(isUsingExplore bool) (first []byte, end []byte) {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
-	if this.isEmpty {
+	var (
+		readPosition int
+	)
+
+	if isUsingExplore == true {
+		if this.episEmpty {
+			return
+		}
+		readPosition = this.eprIdx
+	}else{
+		if this.isEmpty {
+			return
+		}
+		readPosition = this.rIdx
+	}
+
+	if this.wIdx > readPosition {
+		first = this.buf[readPosition:this.wIdx]
 		return
 	}
 
-	if this.wIdx > this.rIdx {
-		first = this.buf[this.rIdx:this.wIdx]
-		return
-	}
-
-	first = this.buf[this.rIdx:this.cap]
+	first = this.buf[readPosition:this.cap]
 	end = this.buf[0:this.wIdx]
 	return
 }
 
 // READ LOCK
-func (this *RingBuffer) PeekUint8() uint8 {
+func (this *RingBuffer) PeekUint8(isUsingExplore bool) uint8 {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
-	if this.size() < 1 {
-		return 0
+	if isUsingExplore == true {
+		if this.ExploreSize() < 1 {
+			return 0
+		}
+	}else{
+		if this.size() < 1 {
+			return 0
+		}
 	}
 
-	f, e := this.Peek(1)
+	f, e := this.Peek(1, isUsingExplore)
 	if len(e) > 0 {
 		return e[0]
 	} else {
@@ -71,15 +101,21 @@ func (this *RingBuffer) PeekUint8() uint8 {
 }
 
 // READ LOCK
-func (this *RingBuffer) PeekUint16() uint16 {
+func (this *RingBuffer) PeekUint16(isUsingExplore bool) uint16 {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
-	if this.size() < 2 {
-		return 0
+	if isUsingExplore == true {
+		if this.ExploreSize() < 2 {
+			return 0
+		}
+	}else{
+		if this.size() < 2 {
+			return 0
+		}
 	}
 
-	f, e := this.Peek(2)
+	f, e := this.Peek(2, isUsingExplore)
 	if len(e) > 0 {
 		return binary.BigEndian.Uint16(bytesJoin2NewByteSlice(f, e))
 	} else {
@@ -88,15 +124,21 @@ func (this *RingBuffer) PeekUint16() uint16 {
 }
 
 // READ LOCK
-func (this *RingBuffer) PeekUint32() uint32 {
+func (this *RingBuffer) PeekUint32(isUsingExplore bool) uint32 {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
-	if this.size() < 4 {
-		return 0
+	if isUsingExplore == true {
+		if this.ExploreSize() < 4 {
+			return 0
+		}
+	}else{
+		if this.size() < 4 {
+			return 0
+		}
 	}
 
-	f, e := this.Peek(4)
+	f, e := this.Peek(4, isUsingExplore)
 	if len(e) > 0 {
 		return binary.BigEndian.Uint32(bytesJoin2NewByteSlice(f, e))
 	} else {
@@ -105,26 +147,24 @@ func (this *RingBuffer) PeekUint32() uint32 {
 }
 
 // READ LOCK
-func (this *RingBuffer) PeekUint64() uint64 {
+func (this *RingBuffer) PeekUint64(isUsingExplore bool) uint64 {
 	this.m.RLock()
 	defer this.m.RUnlock()
 
-	if this.size() < 8 {
-		return 0
+	if isUsingExplore == true {
+		if this.ExploreSize() < 8 {
+			return 0
+		}
+	}else{
+		if this.size() < 8 {
+			return 0
+		}
 	}
 
-	f, e := this.Peek(8)
+	f, e := this.Peek(8, isUsingExplore)
 	if len(e) > 0 {
 		return binary.BigEndian.Uint64(bytesJoin2NewByteSlice(f, e))
 	} else {
 		return binary.BigEndian.Uint64(f)
 	}
 }
-
-
-
-
-
-
-
-
