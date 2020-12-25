@@ -24,17 +24,19 @@ func main() {
 		}
 	}
 
-	print(buffer.Peek(7))
+	var isUsingExplore = false
 
-	print(buffer.PeekAll())
+	print(buffer.Peek(7, isUsingExplore))
 
-	fmt.Println(buffer.PeekUint8())
+	print(buffer.PeekAll(isUsingExplore))
 
-	fmt.Println(buffer.PeekUint16())
+	fmt.Println(buffer.PeekUint8(isUsingExplore))
 
-	fmt.Println(buffer.PeekUint32())
+	fmt.Println(buffer.PeekUint16(isUsingExplore))
 
-	fmt.Println(buffer.PeekUint64())
+	fmt.Println(buffer.PeekUint32(isUsingExplore))
+
+	fmt.Println(buffer.PeekUint64(isUsingExplore))
 }
 
 /*
